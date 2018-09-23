@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "15814045753",
+    "firebase_url": "https://approver-ev.firebaseio.com",
+    "project_id": "approver-ev",
+    "storage_bucket": "approver-ev.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:15814045753:android:4b5a541e82c7a1b5",
+        "android_client_info": {
+          "package_name": "com.ev.approver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "15814045753-7r6lfsn2nvaohfkcailm3cu0ioht5u7n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCohpCFtI_T4wwUQXQt0PQRSeSEk4NNwCE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

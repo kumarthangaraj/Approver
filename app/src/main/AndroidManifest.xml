@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ev.approver">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/approver"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme.NoActionBar">
+        <uses-permission android:name="android.permission.INTERNET" />
+        <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+        <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
+        <uses-feature
+            android:name="android.hardware.fingerprint"
+            android:required="false" />
+
+        <activity
+            android:name=".PINActivity"
+            android:label="@string/title_activity_pin"
+            android:parentActivityName=".LaunchActivity" />
+        <activity
+            android:name=".DashboardActivity"
+            android:label="@string/title_activity_dashboard"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ApprovalActivity"
+            android:label="@string/title_activity_approval"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <service android:name=".ApproverMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".ListActivity"
+            android:label="@string/title_activity_list"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".LaunchActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".BurgerMenuActivity"
+            android:label="@string/title_activity_burger_menu"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".FpRegisterActivity"
+            android:label="@string/title_activity_fp_register"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+    </application>
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
+</manifest>

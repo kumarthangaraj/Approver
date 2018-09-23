@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Approver</string>
+    <string name="title_activity_pin">PIN Screen</string>
+    <string name="pin_mismatch_error">Mismatch between pin and confirm pin</string>
+    <string name="pin_length">4</string>
+    <string name="pin_length_error">The pin length should be </string>
+    <string name="login">Login</string>
+    <string name="signUp">Sign Up</string>
+    <string name="title_activity_dashboard">Dashboard</string>
+    <string name="title_activity_approval">Request Screen</string>
+    <string name="title_activity_list">Request List</string>
+    <string name="login_success_message">Logged in successfully</string>
+    <string name="chart_label_size">16</string>
+    <string name="chart_data_size">12</string>
+    <string name="title_activity_launch">LaunchActivity</string>
+    <string name="title_activity_burger_menu">BurgerMenuActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_fp_register">FpRegisterActivity</string>
+    <string name="fp_register_message">Swipe your finger</string>
+</resources>
