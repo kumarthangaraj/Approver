@@ -13,7 +13,7 @@ import com.android.volley.toolbox.Volley;
 
 public class ConnectionManager {
     private static ConnectionManager instance = null;
-    private static Context context;
+    private Context context;
     private RequestQueue queue;
     private String mode = "http://";
     private String serverPort = "192.168.43.81:3000";
