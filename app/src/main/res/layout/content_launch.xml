@@ -46,17 +46,6 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="29dp" />
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:ems="10"
-        android:layout_marginBottom="38dp"
-        android:id="@+id/loginPin"
-        android:hint="Enter Pin"
-        android:layout_above="@+id/signUp"
-        android:layout_alignStart="@+id/welcomeTag" />
-
     <TextView
         android:text="Welcome Kumar"
         android:layout_width="wrap_content"
@@ -65,8 +54,30 @@
         android:width="64dp"
         android:textSize="18sp"
         android:layout_marginBottom="16dp"
-        android:layout_above="@+id/loginPin"
+        android:paddingTop="@dimen/activity_top_margin"
+        android:layout_below="@+id/imageView"
         android:layout_alignStart="@+id/imageView"
         android:layout_alignEnd="@+id/imageView" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_fp_40px"
+        android:id="@+id/fingerprintimage"
+        android:scaleType="fitCenter"
+        android:layout_below="@+id/welcomeTag"
+        android:layout_above="@+id/signUp"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberPassword"
+        android:ems="10"
+        android:id="@+id/loginPin"
+        android:hint="Enter Pin"
+        android:layout_marginBottom="32dp"
+        android:layout_above="@+id/signUp"
+        android:layout_alignStart="@+id/welcomeTag" />
 
 </RelativeLayout>

@@ -57,7 +57,7 @@ public class FpRegisterActivity extends AppCompatActivity implements Fingerprint
         clientId = getIntent().getStringExtra("clientId");
         clientKey = getIntent().getStringExtra("clientKey");
         encryptionHandler = new EncryptionHandler();
-        encryptionHandler.init();
+        encryptionHandler.init(CommonConstants.FINGER_PRINT_MODE);
         /*try {
             mKeyStore = KeyStore.getInstance("AndroidKeyStore");
         } catch (KeyStoreException e) {
@@ -110,7 +110,7 @@ public class FpRegisterActivity extends AppCompatActivity implements Fingerprint
         FingerprintHandler fingerprintHandler = new FingerprintHandler(fingerprintManager,this,getApplicationContext());
         //initCipher(defaultCipher,clientId);
         //fingerprintHandler.startListening(new FingerprintManager.CryptoObject(defaultCipher));
-        fingerprintHandler.startListening(encryptionHandler.getCrypto(clientId));
+        fingerprintHandler.startListening(encryptionHandler.getCrypto(clientId, Cipher.ENCRYPT_MODE));
         storeIv();
     }
 
@@ -144,7 +144,7 @@ public class FpRegisterActivity extends AppCompatActivity implements Fingerprint
 
     private void storeIv(){
         SharedPreferences.Editor edit = getSharedPreferences("approver_app",Context.MODE_PRIVATE).edit();
-        edit.putString("fingerprintIv",encryptionHandler.getLastIv());
+        edit.putString("fingerprintIv",encryptionHandler.getLastIv()).commit();
     }
 
     /*private boolean initCipher(Cipher cipher, String clientId){

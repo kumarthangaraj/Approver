@@ -5,11 +5,13 @@ import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
+import android.hardware.fingerprint.FingerprintManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -21,11 +23,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class LaunchActivity extends AppCompatActivity {
+import javax.crypto.Cipher;
+
+public class LaunchActivity extends AppCompatActivity implements FingerprintHandler.Callback {
     private static String TAG = "LaunchActivity";
     private DrawerLayout mDrawerLayout;
+    private String isFingerPrintRegistered = "";
+    EncryptionHandler encryptionHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +48,7 @@ public class LaunchActivity extends AppCompatActivity {
         actionbar.setHomeAsUpIndicator(getMenuBar());
         SharedPreferences pref = getSharedPreferences("approver_app",MODE_PRIVATE);
         String isRegistered = pref.getString("registeredApp","");
-        String isFingerPrintRegistered = pref.getString("fingerPrintRegistered","N");
+        isFingerPrintRegistered = pref.getString("fingerPrintRegistered","N");
         String clientId = pref.getString("clientId","");
         String requestId = getIntent().getStringExtra("requestId");
         Log.d(TAG, "onCreate: requestId is "+requestId);
@@ -54,20 +62,25 @@ public class LaunchActivity extends AppCompatActivity {
         Button signUp = (Button)findViewById(R.id.signUp);
         EditText loginPin = (EditText)findViewById(R.id.loginPin);
         TextView welcomeTag = (TextView)findViewById(R.id.welcomeTag);
+        ImageView fingerprint = (ImageView) findViewById(R.id.fingerprintimage);
 
         if(isRegistered.equals("Y")) {
             signUp.setText(getString(R.string.login));
             welcomeTag.setText("Welcome "+clientId.toUpperCase());
+            welcomeTag.setVisibility(View.VISIBLE);
             if(!isFingerPrintRegistered.equals("Y")) {
                 loginPin.setVisibility(View.VISIBLE);
-                welcomeTag.setVisibility(View.VISIBLE);
+                fingerprint.setVisibility(View.GONE);
             }else {
-
+                loginPin.setVisibility(View.GONE);
+                fingerprint.setVisibility(View.VISIBLE);
             }
         }else {
             signUp.setText(getString(R.string.signUp));
             loginPin.setVisibility(View.GONE);
             welcomeTag.setVisibility(View.GONE);
+            fingerprint.setVisibility(View.GONE);
+
         }
     }
 
@@ -101,15 +114,53 @@ public class LaunchActivity extends AppCompatActivity {
         String button = (String)((Button)findViewById(R.id.signUp)).getText();
         if(button.equals(getString(R.string.signUp))) {
             //callQRCodeScanner();
-            callFingerPrintTest();
+            //callFingerPrintTest();
+            callPinTest();
             /*RegisterHandler dev = new RegisterHandler(this);
             dev.registerDevice("Fo8wdMgOjFsgIIrz7n3Czef9mPCI8gnU");*/
         }else if(button.equals(getString(R.string.login))){
-            LoginHandler loginHandler = new LoginHandler(this);
-            String pin = ((EditText)findViewById(R.id.loginPin)).getText().toString();
-            loginHandler.login(pin);
-            Log.d("Debug","Login FLow called");
+            if(!isFingerPrintRegistered.equals("Y")) {
+                String pin = ((EditText) findViewById(R.id.loginPin)).getText().toString();
+                String decryptedString = getClientKeyfromKeyStore(pin);
+                /*LoginHandler loginHandler = new LoginHandler(this);
+                String pin = ((EditText) findViewById(R.id.loginPin)).getText().toString();
+                loginHandler.login(pin);
+                Log.d("Debug", "Login FLow called");*/
+            }else {
+                Toast.makeText(this,"Swipe your finger",Toast.LENGTH_SHORT).show();
+                startListeningFingerPrint();
+            }
         }
+    }
+
+    private void startListeningFingerPrint(){
+        encryptionHandler = new EncryptionHandler();
+        encryptionHandler.init(CommonConstants.FINGER_PRINT_MODE);
+        SharedPreferences pref = getSharedPreferences("approver_app",MODE_PRIVATE);
+        String clientId = pref.getString("clientId","");
+        FingerprintManager fingerprintManager = getSystemService(FingerprintManager.class);
+        //encryptionHandler.createKey(clientId);
+        setLastIv("fingerprintIv");
+        FingerprintHandler fingerprintHandler = new FingerprintHandler(fingerprintManager,this,getApplicationContext());
+        fingerprintHandler.startListening(encryptionHandler.getCrypto(clientId, Cipher.DECRYPT_MODE));
+    }
+
+    public void setLastIv(String keyString){
+        SharedPreferences pref = getSharedPreferences("approver_app",MODE_PRIVATE);
+        String ivString = pref.getString(keyString, null);
+        byte[] ivBytes = encryptionHandler.decodeBytes(ivString);
+        encryptionHandler.setLastIv(ivBytes);
+    }
+
+    public void onAuthenticated(Cipher cipher){
+        SharedPreferences pref = getSharedPreferences("approver_app",MODE_PRIVATE);
+        String clientKey = pref.getString("clientKey", null);
+        String decryptedString = encryptionHandler.getDecryptedString(cipher,clientKey);
+        Toast.makeText(this,decryptedString,Toast.LENGTH_LONG).show();
+    }
+
+    public void onError(){
+        Toast.makeText(this, "Authentication error",Toast.LENGTH_LONG).show();
     }
 
     protected void callQRCodeScanner(){
@@ -161,5 +212,24 @@ public class LaunchActivity extends AppCompatActivity {
         fp.putExtra("clientId", (String) "test");
         fp.putExtra("clientKey", (String) "dfdfdge3535dfdf");
         this.startActivity(fp);
+    }
+    private void callPinTest(){
+        Intent fp = new Intent(this, PINActivity.class);
+        fp.putExtra("clientId", (String) "test");
+        fp.putExtra("clientKey", (String) "dfdfdge3535dfdf");
+        this.startActivity(fp);
+    }
+
+    private String getClientKeyfromKeyStore(String keyString){
+        encryptionHandler = new EncryptionHandler();
+        encryptionHandler.init(CommonConstants.PIN_MODE);
+        setLastIv("pinIv");
+        SharedPreferences pref = getSharedPreferences("approver_app",MODE_PRIVATE);
+        String clientKey = pref.getString("clientKey", null);
+        String decryptedString = encryptionHandler.getDecryptedString(
+                                        encryptionHandler.getCipher(keyString,Cipher.DECRYPT_MODE),
+                                        clientKey);
+        Toast.makeText(this,decryptedString,Toast.LENGTH_LONG).show();
+        return decryptedString;
     }
 }

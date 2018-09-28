@@ -1,5 +1,6 @@
 package com.ev.approver;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,10 +14,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import javax.crypto.Cipher;
+
 public class PINActivity extends AppCompatActivity {
 
     String clientId;
     String clientKey;
+    private EncryptionHandler encryptionHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +48,7 @@ public class PINActivity extends AppCompatActivity {
         SharedPreferences pref = getSharedPreferences("approver_app",MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         editor.putString("clientId",clientId).commit();
-        editor.putString("clientKey",clientKey).commit();
+        setEncryptedData(pin.getText().toString());
         editor.putString("registeredApp","Y").commit();
         editor.putString("fingerPrintRegistered","N").commit();
         NotificationHandler notificationHandler = new NotificationHandler(getApplicationContext());
@@ -51,5 +56,22 @@ public class PINActivity extends AppCompatActivity {
         notificationHandler.updateFCMToken();
         NavUtils.navigateUpFromSameTask(this);
         return;
+    }
+
+    private void setEncryptedData(String keyString){
+        encryptionHandler = new EncryptionHandler();
+        encryptionHandler.init(CommonConstants.PIN_MODE);
+        encryptionHandler.createKey(keyString);
+        String encryptedData = encryptionHandler.getEncryptedString(
+                                        encryptionHandler.getCipher(keyString, Cipher.ENCRYPT_MODE),
+                                        clientKey);
+        storeIv();
+        SharedPreferences.Editor edit = getSharedPreferences("approver_app", Context.MODE_PRIVATE).edit();
+        edit.putString("clientKey",encryptedData).commit();
+    }
+
+    private void storeIv(){
+        SharedPreferences.Editor edit = getSharedPreferences("approver_app",Context.MODE_PRIVATE).edit();
+        edit.putString("pinIv",encryptionHandler.getLastIv()).commit();
     }
 }

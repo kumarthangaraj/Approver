@@ -22,4 +22,5 @@
     <string name="title_activity_fp_register">FpRegisterActivity</string>
     <string name="fp_register_message">Swipe your finger</string>
     <string name="fingerprint_not_recognized">Fingerprint not recognized</string>
+    <string name="title_finger_register">Fingerprint Register</string>
 </resources>

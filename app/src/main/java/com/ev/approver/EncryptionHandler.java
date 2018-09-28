@@ -6,6 +6,7 @@ import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -17,12 +18,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 /**
  * Created by Kumar_Thangaraj on 9/28/2018.
@@ -35,8 +39,9 @@ public class EncryptionHandler {
     private KeyGenerator mKeyGenerator;
     private Cipher defaultCipher;
     private byte[] lastIv;
+    private int mode;
 
-    public void init(){
+    public void init(int mode){
         try {
             mKeyStore = KeyStore.getInstance("AndroidKeyStore");
         } catch (KeyStoreException e) {
@@ -54,6 +59,7 @@ public class EncryptionHandler {
         }catch (NoSuchAlgorithmException | NoSuchPaddingException e){
             throw new RuntimeException("Failed to get an instance of Cipher", e);
         }
+        this.mode = mode;
     }
 
     public String getLastIv(){
@@ -61,6 +67,9 @@ public class EncryptionHandler {
     }
 
     public void createKey(String keyString){
+        boolean fingerPrintMode = false;
+        if(mode == CommonConstants.FINGER_PRINT_MODE)
+            fingerPrintMode = true;
         try{
             mKeyStore.load(null);
             KeyGenParameterSpec.Builder builder = new KeyGenParameterSpec.Builder(keyString,
@@ -69,7 +78,7 @@ public class EncryptionHandler {
                     .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
                     // Require the user to authenticate with a fingerprint to authorize every use
                     // of the key
-                    .setUserAuthenticationRequired(true)
+                    .setUserAuthenticationRequired(fingerPrintMode)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7);
             mKeyGenerator.init(builder.build());
             mKeyGenerator.generateKey();
@@ -79,17 +88,30 @@ public class EncryptionHandler {
         }
     }
 
-    public FingerprintManager.CryptoObject getCrypto(String keyString){
+    public void setLastIv(byte[] bytes){
+        this.lastIv = bytes;
+    }
+
+    public Cipher getCipher(String keyString, int mode){
         try{
             mKeyStore.load(null);
             SecretKey key = (SecretKey) mKeyStore.getKey(keyString, null);
-            defaultCipher.init(Cipher.ENCRYPT_MODE, key);
-            lastIv = defaultCipher.getIV();
-            return new FingerprintManager.CryptoObject(defaultCipher);
+            if(mode == Cipher.ENCRYPT_MODE) {
+                defaultCipher.init(mode, key);
+                lastIv = defaultCipher.getIV();
+            }else {
+                defaultCipher.init(mode,key,new IvParameterSpec(lastIv));
+            }
+            return defaultCipher;
         } catch (KeyStoreException | CertificateException | UnrecoverableKeyException | IOException
-                | NoSuchAlgorithmException | InvalidKeyException e) {
+                | NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException e) {
             throw new RuntimeException("Failed to init Cipher", e);
         }
+    }
+
+    public FingerprintManager.CryptoObject getCrypto(String keyString,int mode){
+            getCipher(keyString, mode);
+            return new FingerprintManager.CryptoObject(defaultCipher);
     }
 
     public String getEncryptedString(Cipher cipher, String keyValueString){
@@ -120,6 +142,48 @@ public class EncryptionHandler {
         if( 'A'<=ch && ch<='F' )    return ch-'A'+10;
         if( 'a'<=ch && ch<='f' )    return ch-'a'+10;
         return -1;
+    }
+
+    public byte[] decodeBytes(String inputString){
+        final int len = inputString.length();
+
+        // "111" is not a valid hex encoding.
+        if( len%2 != 0 )
+            throw new IllegalArgumentException("hexBinary needs to be even-length: "+inputString);
+
+        byte[] out = new byte[len/2];
+
+        for( int i=0; i<len; i+=2 ) {
+            int h = hexToBin(inputString.charAt(i  ));
+            int l = hexToBin(inputString.charAt(i+1));
+            if( h==-1 || l==-1 )
+                throw new IllegalArgumentException("contains illegal character for hexBinary: "+inputString);
+            out[i/2] = (byte)(h*16+l);
+        }
+        return out;
+    }
+
+    public String getDecryptedString(Cipher cipher, String encryptedString){
+        String strVal = null;
+        byte[] decodedString = decodeBytes(encryptedString);
+        CipherInputStream cipherInputStream = new CipherInputStream(new ByteArrayInputStream(decodedString),cipher);
+        ArrayList<Byte> byteValues = new ArrayList<>();
+        int nextByte;
+        try {
+            while ((nextByte = cipherInputStream.read()) != -1) {
+                byteValues.add((byte) nextByte);
+            }
+            cipherInputStream.close();
+        }catch (IOException e){
+            throw new RuntimeException("Unable to decrypt ",e);
+        }
+        byte[] bytes = new byte[byteValues.size()];
+        for (int i = 0; i < byteValues.size(); i++) {
+            bytes[i] = byteValues.get(i).byteValue();
+        }
+        strVal = new String(bytes, Charset.defaultCharset());
+
+        return strVal;
     }
 
 }

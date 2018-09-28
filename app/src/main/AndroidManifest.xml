@@ -19,7 +19,15 @@
         <activity
             android:name=".PINActivity"
             android:label="@string/title_activity_pin"
-            android:parentActivityName=".LaunchActivity" />
+            android:parentActivityName=".LaunchActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
+        <activity
+            android:name=".FpRegisterActivity"
+            android:label="@string/title_finger_register"
+            android:parentActivityName=".LaunchActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
         <activity
             android:name=".DashboardActivity"
             android:label="@string/title_activity_dashboard"
@@ -53,10 +61,6 @@
             android:name=".BurgerMenuActivity"
             android:label="@string/title_activity_burger_menu"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".FpRegisterActivity"
-            android:label="@string/title_activity_fp_register"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 
