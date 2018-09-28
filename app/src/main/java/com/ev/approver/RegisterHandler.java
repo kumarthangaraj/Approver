@@ -79,17 +79,17 @@ public class RegisterHandler {
                     public void onResponse(JSONObject response) {
                         Log.d("DEBUG","JsonObjectResponse is "+response);
                         try {
-                            //if(isFingerPrintAvailable(context)){
+                            if(isFingerPrintAvailable(context)){
                                 Intent fp = new Intent(context, FpRegisterActivity.class);
                                 fp.putExtra("clientId", (String) response.get("clientId"));
                                 fp.putExtra("clientKey", (String) response.get("clientKey"));
                                 context.startActivity(fp);
-                            /*}else {
+                            }else {
                                 Intent pin = new Intent(context, PINActivity.class);
                                 pin.putExtra("clientId", (String) response.get("clientId"));
                                 pin.putExtra("clientKey", (String) response.get("clientKey"));
                                 context.startActivity(pin);
-                            }*/
+                            }
                             //Toast.makeText(context, (String) response.get("message"), Toast.LENGTH_LONG).show();
 
                         } catch(Exception e){
@@ -120,6 +120,8 @@ public class RegisterHandler {
             FingerprintManager fingerprintManager = (FingerprintManager) context.getSystemService(FINGERPRINT_SERVICE);
             if(checkPermission(context)) {
                 if (fingerprintManager.isHardwareDetected()) {
+                    Log.d("RegisterHandler","HardwareDetected");
+                    Log.d("RegisterHandler","hasEntrolledFingerPrints "+fingerprintManager.hasEnrolledFingerprints());
                     if (fingerprintManager.hasEnrolledFingerprints()) {
                         return true;
                     }
@@ -129,8 +131,11 @@ public class RegisterHandler {
         return false;
     }
     private Boolean checkPermission(Context context){
-        if(ContextCompat.checkSelfPermission(context, Manifest.permission.USE_FINGERPRINT) == PackageManager.PERMISSION_DENIED)
+        Log.d("RegisterHandler",""+(ContextCompat.checkSelfPermission(context, Manifest.permission.USE_FINGERPRINT)));
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.USE_FINGERPRINT) == PackageManager.PERMISSION_GRANTED)
             return true;
+
+        Log.d("RegisterHandler","return false");
         return false;
     }
 }

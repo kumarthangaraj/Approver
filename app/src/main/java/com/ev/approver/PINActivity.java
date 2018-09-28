@@ -45,6 +45,7 @@ public class PINActivity extends AppCompatActivity {
         editor.putString("clientId",clientId).commit();
         editor.putString("clientKey",clientKey).commit();
         editor.putString("registeredApp","Y").commit();
+        editor.putString("fingerPrintRegistered","N").commit();
         NotificationHandler notificationHandler = new NotificationHandler(getApplicationContext());
         notificationHandler.registerDevice();
         notificationHandler.updateFCMToken();

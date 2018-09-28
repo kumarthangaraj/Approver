@@ -40,6 +40,7 @@ public class LaunchActivity extends AppCompatActivity {
         actionbar.setHomeAsUpIndicator(getMenuBar());
         SharedPreferences pref = getSharedPreferences("approver_app",MODE_PRIVATE);
         String isRegistered = pref.getString("registeredApp","");
+        String isFingerPrintRegistered = pref.getString("fingerPrintRegistered","N");
         String clientId = pref.getString("clientId","");
         String requestId = getIntent().getStringExtra("requestId");
         Log.d(TAG, "onCreate: requestId is "+requestId);
@@ -56,9 +57,13 @@ public class LaunchActivity extends AppCompatActivity {
 
         if(isRegistered.equals("Y")) {
             signUp.setText(getString(R.string.login));
-            loginPin.setVisibility(View.VISIBLE);
-            welcomeTag.setVisibility(View.VISIBLE);
             welcomeTag.setText("Welcome "+clientId.toUpperCase());
+            if(!isFingerPrintRegistered.equals("Y")) {
+                loginPin.setVisibility(View.VISIBLE);
+                welcomeTag.setVisibility(View.VISIBLE);
+            }else {
+
+            }
         }else {
             signUp.setText(getString(R.string.signUp));
             loginPin.setVisibility(View.GONE);
@@ -96,8 +101,9 @@ public class LaunchActivity extends AppCompatActivity {
         String button = (String)((Button)findViewById(R.id.signUp)).getText();
         if(button.equals(getString(R.string.signUp))) {
             //callQRCodeScanner();
-            RegisterHandler dev = new RegisterHandler(this);
-            dev.registerDevice("Fo8wdMgOjFsgIIrz7n3Czef9mPCI8gnU");
+            callFingerPrintTest();
+            /*RegisterHandler dev = new RegisterHandler(this);
+            dev.registerDevice("Fo8wdMgOjFsgIIrz7n3Czef9mPCI8gnU");*/
         }else if(button.equals(getString(R.string.login))){
             LoginHandler loginHandler = new LoginHandler(this);
             String pin = ((EditText)findViewById(R.id.loginPin)).getText().toString();
@@ -148,5 +154,12 @@ public class LaunchActivity extends AppCompatActivity {
         Drawable icMenu = ContextCompat.getDrawable(this,R.drawable.ic_menu).mutate();
         icMenu.setTint(getColor(R.color.white));
         return icMenu;
+    }
+
+    private void callFingerPrintTest(){
+        Intent fp = new Intent(this, FpRegisterActivity.class);
+        fp.putExtra("clientId", (String) "test");
+        fp.putExtra("clientKey", (String) "dfdfdge3535dfdf");
+        this.startActivity(fp);
     }
 }

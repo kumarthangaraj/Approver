@@ -148,7 +148,7 @@ public class ApprovalHandler {
         //return getSampleList();
 
         //String restApi = "/api/TranDtls?filter=%7B%22where%22%3A%7B%22approval_status%22%3A%22N%22%7D%7D";
-        String url = "http://192.168.43.81:3000/api/TranDtls?filter=%7B%22where%22%3A%7B%22approval_status%22%3A%22N%22%7D%7D";
+        String url = "http://192.168.0.2:3000/api/TranDtls?filter=%7B%22where%22%3A%7B%22approval_status%22%3A%22N%22%7D%7D";
 
         Log.d(TAG, "getPendingRequestList: inside ");
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
